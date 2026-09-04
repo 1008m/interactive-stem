@@ -1,0 +1,600 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Air Drag Projectile Lab</title>
+  <style>
+    :root{
+      --bg:#ffffff;
+      --panel:#fbfcfe;
+      --text:#1f2937;
+      --muted:#6b7280;
+      --line:#d9dee7;
+      --accent:#2563eb;
+      --ideal:#9ca3af;
+      --drag:#f59e0b;
+      --ball:#7c3aed;
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",sans-serif;
+      background:transparent;
+      color:var(--text);
+    }
+    .wrap{max-width:1100px;margin:0 auto;padding:6px}
+    .layout{
+      display:grid;
+      grid-template-columns:minmax(0,1fr) 250px;
+      gap:10px;
+    }
+    .card{
+      background:var(--bg);
+      border:1px solid var(--line);
+      border-radius:14px;
+      padding:10px;
+    }
+    svg{display:block;width:100%;height:auto;touch-action:none;user-select:none}
+    .topline{
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
+      align-items:center;
+      flex-wrap:wrap;
+      margin-bottom:4px;
+      font-size:14px;
+    }
+    .muted{color:var(--muted)}
+    .control{margin-bottom:10px}
+    .control label{
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
+      font-size:13px;
+      font-weight:650;
+      margin-bottom:4px;
+    }
+    input[type=range]{width:100%}
+    button{
+      min-height:40px;
+      border:1px solid var(--line);
+      border-radius:9px;
+      padding:7px 10px;
+      background:#fff;
+      color:var(--text);
+      font-weight:700;
+      cursor:pointer;
+    }
+    button.primary{background:var(--accent);border-color:var(--accent);color:white}
+    .buttons{display:flex;gap:6px}
+    .buttons button:first-child{flex:1}
+    .metrics{
+      display:grid;
+      grid-template-columns:1fr 1fr;
+      gap:6px;
+      margin:8px 0;
+    }
+    .metric{
+      border:1px solid var(--line);
+      border-radius:9px;
+      padding:7px;
+    }
+    .metric .k{font-size:11px;color:var(--muted)}
+    .metric .v{font-size:16px;font-weight:800;margin-top:2px}
+    .best{
+      margin-top:7px;
+      border:1px solid var(--line);
+      border-radius:9px;
+      padding:7px;
+      text-align:center;
+      font-size:12px;
+      color:var(--muted);
+      line-height:1.45;
+    }
+    .note{
+      margin-top:7px;
+      font-size:11px;
+      line-height:1.45;
+      color:var(--muted);
+    }
+    .legend{
+      display:flex;
+      justify-content:flex-end;
+      gap:12px;
+      font-size:11px;
+      color:var(--muted);
+      margin-top:2px;
+    }
+    .swatch{
+      display:inline-block;
+      width:20px;
+      vertical-align:middle;
+      margin-right:4px;
+      border-top:3px solid;
+    }
+    .idealSwatch{border-color:var(--ideal);border-top-style:dashed}
+    .dragSwatch{border-color:var(--drag)}
+    @media(max-width:760px){
+      .layout{grid-template-columns:1fr}
+      .wrap{padding:3px}
+    }
+  </style>
+</head>
+<body>
+<main class="wrap">
+  <div class="layout">
+
+    <section class="card">
+      <div class="topline">
+        <strong>공기저항이 있으면 얼마나 달라질까?</strong>
+        <span id="live" class="muted">40.0° · 25.0 m/s</span>
+      </div>
+
+      <svg id="field" viewBox="0 0 900 335" aria-label="공기저항을 포함한 포물선 운동 비교">
+        <rect x="12" y="10" width="876" height="282" rx="12" fill="#fbfcfe"/>
+        <line x1="70" y1="260" x2="850" y2="260" stroke="#9aa3af" stroke-width="2.5"/>
+
+        <g id="grid"></g>
+
+        <path id="idealPath" d="" fill="none" stroke="#9ca3af" stroke-width="2.2"
+              stroke-dasharray="5 6" opacity=".72"/>
+        <path id="dragPath" d="" fill="none" stroke="#f59e0b" stroke-width="3.8"/>
+
+        <line id="pullLine" x1="70" y1="260" x2="70" y2="260"
+              stroke="#6b7280" stroke-width="3" stroke-dasharray="6 6" opacity="0"/>
+
+        <circle id="ball" cx="70" cy="260" r="14" fill="#7c3aed"
+                stroke="#111827" stroke-width="2" style="cursor:grab"/>
+        <path id="seam"
+              d="M58 256 Q70 246 82 256 M58 264 Q70 274 82 264 M70 247 L70 273"
+              fill="none" stroke="#111827" stroke-width="1.2" opacity=".65"
+              pointer-events="none"/>
+
+        <text id="resultText" x="460" y="42" text-anchor="middle"
+              font-size="25" font-weight="800" fill="#111827"></text>
+
+        <text x="70" y="292" font-size="11" fill="#6b7280">0 m</text>
+        <text x="850" y="292" text-anchor="end" font-size="11" fill="#6b7280">180 m</text>
+        <text x="18" y="25" font-size="10" fill="#6b7280">50 m</text>
+      </svg>
+
+      <div class="legend">
+        <span><i class="swatch idealSwatch"></i>Ideal</span>
+        <span><i class="swatch dragSwatch"></i>Air drag</span>
+      </div>
+      <div class="note">
+        축은 항상 고정되어 있습니다: 가로 0–180 m, 세로 0–50 m.
+        따라서 속도를 바꿨을 때 궤적 길이를 눈으로 직접 비교할 수 있습니다.
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="control">
+        <label for="angle">발사각 <output id="angleOut">40.0°</output></label>
+        <input id="angle" type="range" min="10" max="70" step="0.5" value="40">
+      </div>
+
+      <div class="control">
+        <label for="speed">초기속도 <output id="speedOut">25.0 m/s</output></label>
+        <input id="speed" type="range" min="10" max="40" step="0.5" value="25">
+      </div>
+
+      <div class="metrics">
+        <div class="metric">
+          <div class="k">Ideal 비거리</div>
+          <div class="v" id="idealRange">—</div>
+        </div>
+        <div class="metric">
+          <div class="k">Drag 비거리</div>
+          <div class="v" id="dragRange">—</div>
+        </div>
+        <div class="metric">
+          <div class="k">항력 손실</div>
+          <div class="v" id="loss">—</div>
+        </div>
+        <div class="metric">
+          <div class="k">Drag 최적각</div>
+          <div class="v" id="bestAngleSmall">—</div>
+        </div>
+      </div>
+
+      <div class="buttons">
+        <button id="throwBtn" type="button" class="primary">던지기</button>
+        <button id="resetBtn" type="button">초기화</button>
+      </div>
+
+      <button id="bestBtn" type="button" style="width:100%;margin-top:7px">
+        공기저항 포함 최적각 찾기
+      </button>
+
+      <div id="bestText" class="best">
+        속도를 올리면 항력 손실은 커지지만,<br>절대 비거리는 계속 증가합니다.
+      </div>
+
+      <div class="note">
+        단순 구형 공 모델 · m=0.145 kg · d=73 mm · C<sub>D</sub>=0.47 · ρ=1.225 kg/m³<br>
+        스핀·바람·Reynolds 수에 따른 C<sub>D</sub> 변화는 제외합니다.
+      </div>
+    </section>
+
+  </div>
+</main>
+
+<script>
+(() => {
+  const g = 9.81;
+  const rho = 1.225;
+  const mass = 0.145;
+  const diameter = 0.073;
+  const Cd = 0.47;
+  const area = Math.PI * diameter * diameter / 4;
+  const beta = 0.5 * rho * Cd * area / mass;
+
+  const XMAX = 180;
+  const YMAX = 50;
+
+  const origin = {x:70, y:260};
+  const plot = {left:70, right:850, top:30, bottom:260};
+  const sx = (plot.right - plot.left) / XMAX;
+  const sy = (plot.bottom - plot.top) / YMAX;
+
+  const field = document.getElementById('field');
+  const ball = document.getElementById('ball');
+  const seam = document.getElementById('seam');
+  const idealPath = document.getElementById('idealPath');
+  const dragPath = document.getElementById('dragPath');
+  const pullLine = document.getElementById('pullLine');
+  const grid = document.getElementById('grid');
+  const resultText = document.getElementById('resultText');
+
+  const angle = document.getElementById('angle');
+  const speed = document.getElementById('speed');
+  const angleOut = document.getElementById('angleOut');
+  const speedOut = document.getElementById('speedOut');
+  const live = document.getElementById('live');
+
+  const idealRangeEl = document.getElementById('idealRange');
+  const dragRangeEl = document.getElementById('dragRange');
+  const lossEl = document.getElementById('loss');
+  const bestAngleSmall = document.getElementById('bestAngleSmall');
+  const bestText = document.getElementById('bestText');
+
+  const throwBtn = document.getElementById('throwBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const bestBtn = document.getElementById('bestBtn');
+
+  const MIN_SPEED = 10;
+  const MAX_SPEED = 40;
+  const MAX_PULL = 105;
+  const ANGLE_GAIN = 0.38;
+
+  let dragging = false;
+  let raf = null;
+  let returnTimer = null;
+
+  const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
+  const rad = a => a*Math.PI/180;
+
+  function idealRange(a,s){
+    return s*s*Math.sin(2*rad(a))/g;
+  }
+
+  function idealPoints(a,s){
+    const th = rad(a);
+    const tf = 2*s*Math.sin(th)/g;
+    const pts = [];
+    for(let i=0;i<=120;i++){
+      const t = tf*i/120;
+      pts.push({
+        x:s*Math.cos(th)*t,
+        y:s*Math.sin(th)*t - 0.5*g*t*t
+      });
+    }
+    return pts;
+  }
+
+  function deriv(state){
+    const [x,y,vx,vy] = state;
+    const v = Math.hypot(vx,vy);
+    return [
+      vx,
+      vy,
+      -beta*v*vx,
+      -g - beta*v*vy
+    ];
+  }
+
+  function rk4Step(state,dt){
+    const k1 = deriv(state);
+    const s2 = state.map((v,i)=>v + 0.5*dt*k1[i]);
+    const k2 = deriv(s2);
+    const s3 = state.map((v,i)=>v + 0.5*dt*k2[i]);
+    const k3 = deriv(s3);
+    const s4 = state.map((v,i)=>v + dt*k3[i]);
+    const k4 = deriv(s4);
+    return state.map((v,i)=>
+      v + dt*(k1[i] + 2*k2[i] + 2*k3[i] + k4[i])/6
+    );
+  }
+
+  function dragSim(a,s,keepPoints=false){
+    const th = rad(a);
+    const dt = 0.005;
+
+    let state = [0,0,s*Math.cos(th),s*Math.sin(th)];
+    let prev = state.slice();
+    let t = 0;
+    let maxY = 0;
+    const pts = keepPoints ? [{x:0,y:0}] : null;
+
+    for(let n=0;n<5000;n++){
+      prev = state.slice();
+      state = rk4Step(state,dt);
+      t += dt;
+
+      const x = state[0];
+      const y = state[1];
+      maxY = Math.max(maxY,y);
+
+      if(keepPoints && n%3===0){
+        pts.push({x,y});
+      }
+
+      if(y < 0 && t > 0.05){
+        const x0 = prev[0], y0 = prev[1];
+        const x1 = state[0], y1 = state[1];
+        const frac = Math.abs(y0-y1) > 1e-12 ? y0/(y0-y1) : 0;
+        const range = x0 + (x1-x0)*frac;
+
+        if(keepPoints){
+          pts.push({x:range,y:0});
+        }
+
+        return {range,maxY,time:t,pts:pts || []};
+      }
+    }
+
+    return {
+      range:state[0],
+      maxY,
+      time:t,
+      pts:pts || []
+    };
+  }
+
+  function pathFromPoints(pts){
+    let d = '';
+    for(let i=0;i<pts.length;i++){
+      const px = origin.x + pts[i].x*sx;
+      const py = origin.y - pts[i].y*sy;
+      d += (i ? ' L ' : 'M ') + px.toFixed(1) + ' ' + py.toFixed(1);
+    }
+    return d;
+  }
+
+  function drawGrid(){
+    const ns = 'http://www.w3.org/2000/svg';
+
+    for(let x=0;x<=180;x+=30){
+      const px = origin.x + x*sx;
+
+      const line = document.createElementNS(ns,'line');
+      line.setAttribute('x1',px);
+      line.setAttribute('y1',plot.top);
+      line.setAttribute('x2',px);
+      line.setAttribute('y2',plot.bottom);
+      line.setAttribute('stroke','#e7eaf0');
+      line.setAttribute('stroke-width','1');
+
+      const text = document.createElementNS(ns,'text');
+      text.setAttribute('x',px);
+      text.setAttribute('y',292);
+      text.setAttribute('text-anchor',x===0?'start':x===180?'end':'middle');
+      text.setAttribute('font-size','10');
+      text.setAttribute('fill','#9ca3af');
+      text.textContent = x + ' m';
+
+      grid.append(line,text);
+    }
+
+    for(let y=10;y<=50;y+=10){
+      const py = origin.y - y*sy;
+      const line = document.createElementNS(ns,'line');
+      line.setAttribute('x1',plot.left);
+      line.setAttribute('y1',py);
+      line.setAttribute('x2',plot.right);
+      line.setAttribute('y2',py);
+      line.setAttribute('stroke','#eef0f4');
+      line.setAttribute('stroke-width','1');
+      grid.appendChild(line);
+    }
+  }
+
+  function params(){
+    return {a:+angle.value, s:+speed.value};
+  }
+
+  function setBall(x,y){
+    ball.setAttribute('cx',x);
+    ball.setAttribute('cy',y);
+    seam.setAttribute('transform',`translate(${x-origin.x} ${y-origin.y})`);
+  }
+
+  function clearMotion(){
+    if(raf) cancelAnimationFrame(raf);
+    raf = null;
+    if(returnTimer) clearTimeout(returnTimer);
+    returnTimer = null;
+  }
+
+  function findBest(s){
+    let bestA = 10;
+    let bestR = -1;
+
+    for(let a=10;a<=70;a+=0.25){
+      const r = dragSim(a,s,false).range;
+      if(r > bestR){
+        bestR = r;
+        bestA = a;
+      }
+    }
+    return {angle:bestA,range:bestR};
+  }
+
+  function update(){
+    const {a,s} = params();
+
+    const dr = dragSim(a,s,true);
+    const ir = idealRange(a,s);
+    const best = findBest(s);
+
+    angleOut.textContent = a.toFixed(1) + '°';
+    speedOut.textContent = s.toFixed(1) + ' m/s';
+    live.textContent = a.toFixed(1) + '° · ' + s.toFixed(1) + ' m/s';
+
+    idealRangeEl.textContent = ir.toFixed(1) + ' m';
+    dragRangeEl.textContent = dr.range.toFixed(1) + ' m';
+    lossEl.textContent = (ir - dr.range).toFixed(1) + ' m';
+    bestAngleSmall.textContent = best.angle.toFixed(2) + '°';
+
+    idealPath.setAttribute('d',pathFromPoints(idealPoints(a,s)));
+    dragPath.setAttribute('d',pathFromPoints(dr.pts));
+  }
+
+  function home(){
+    setBall(origin.x,origin.y);
+    pullLine.setAttribute('opacity','0');
+  }
+
+  function animateThrow(){
+    clearMotion();
+    resultText.textContent = '';
+    home();
+
+    const {a,s} = params();
+    const sim = dragSim(a,s,true);
+    const pts = sim.pts;
+    const start = performance.now();
+    const duration = 620;
+
+    function frame(now){
+      const u = clamp((now-start)/duration,0,1);
+      const idx = Math.min(pts.length-1,Math.floor(u*(pts.length-1)));
+      const p = pts[idx];
+
+      setBall(
+        origin.x + p.x*sx,
+        origin.y - p.y*sy
+      );
+
+      if(u>=1){
+        raf = null;
+        resultText.textContent = sim.range.toFixed(1) + ' m';
+
+        returnTimer = setTimeout(()=>{
+          home();
+          resultText.textContent = '';
+        },450);
+        return;
+      }
+
+      raf = requestAnimationFrame(frame);
+    }
+
+    raf = requestAnimationFrame(frame);
+  }
+
+  function svgPoint(e){
+    const p = field.createSVGPoint();
+    p.x = e.clientX;
+    p.y = e.clientY;
+    const ctm = field.getScreenCTM();
+    return ctm ? p.matrixTransform(ctm.inverse()) : origin;
+  }
+
+  function mapDrag(p){
+    const dx = clamp(origin.x-p.x,0,MAX_PULL);
+    const dy = clamp(p.y-origin.y,-80,80);
+
+    const power = Math.pow(dx/MAX_PULL,0.48);
+    const s = MIN_SPEED + power*(MAX_SPEED-MIN_SPEED);
+    const a = clamp(40 + dy*ANGLE_GAIN,10,70);
+
+    angle.value = a.toFixed(1);
+    speed.value = s.toFixed(1);
+
+    const shownX = origin.x-dx;
+    const shownY = origin.y+dy;
+
+    setBall(shownX,shownY);
+
+    pullLine.setAttribute('x1',shownX);
+    pullLine.setAttribute('y1',shownY);
+    pullLine.setAttribute('x2',origin.x);
+    pullLine.setAttribute('y2',origin.y);
+    pullLine.setAttribute('opacity','1');
+
+    bestText.innerHTML =
+      '속도를 올리면 항력 손실은 커지지만,<br>절대 비거리는 계속 증가합니다.';
+
+    update();
+  }
+
+  ball.addEventListener('pointerdown',e=>{
+    dragging = true;
+    clearMotion();
+    ball.setPointerCapture(e.pointerId);
+    ball.style.cursor = 'grabbing';
+  });
+
+  ball.addEventListener('pointermove',e=>{
+    if(dragging) mapDrag(svgPoint(e));
+  });
+
+  function release(){
+    if(!dragging) return;
+    dragging = false;
+    ball.style.cursor = 'grab';
+    setBall(origin.x,origin.y);
+    animateThrow();
+  }
+
+  ball.addEventListener('pointerup',release);
+  ball.addEventListener('pointercancel',release);
+
+  angle.addEventListener('input',update);
+  speed.addEventListener('input',update);
+
+  throwBtn.addEventListener('click',animateThrow);
+
+  resetBtn.addEventListener('click',()=>{
+    clearMotion();
+    angle.value = '40';
+    speed.value = '25';
+    resultText.textContent = '';
+    bestText.innerHTML =
+      '속도를 올리면 항력 손실은 커지지만,<br>절대 비거리는 계속 증가합니다.';
+    update();
+    home();
+  });
+
+  bestBtn.addEventListener('click',()=>{
+    const s = +speed.value;
+    const best = findBest(s);
+
+    angle.value = best.angle.toFixed(2);
+    update();
+
+    bestText.innerHTML =
+      '<strong>Best angle ≈ ' + best.angle.toFixed(2) + '°</strong><br>' +
+      'Air-drag range = ' + best.range.toFixed(1) + ' m';
+  });
+
+  drawGrid();
+  update();
+  home();
+})();
+</script>
+</body>
+</html>
