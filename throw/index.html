@@ -4,7 +4,6 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <title>45°가 정말 가장 멀리 갈까?</title>
-
   <style>
     :root{
       --bg:#f7f8fa;
@@ -18,167 +17,40 @@
       --benchmark:#9ca3af;
       --ground:#9aa3af;
     }
-
     *{box-sizing:border-box}
-
     body{
       margin:0;
-      font-family:system-ui,-apple-system,BlinkMacSystemFont,
-                  "Segoe UI",Roboto,"Noto Sans KR",sans-serif;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"Noto Sans KR",sans-serif;
       background:var(--bg);
       color:var(--text);
     }
-
-    .wrap{
-      max-width:1100px;
-      margin:0 auto;
-      padding:18px;
-    }
-
-    h1{
-      font-size:clamp(24px,4vw,38px);
-      margin:0 0 8px;
-    }
-
-    .sub{
-      color:var(--muted);
-      margin-bottom:16px;
-      line-height:1.55;
-    }
-
-    .card{
-      background:var(--card);
-      border:1px solid var(--line);
-      border-radius:16px;
-      padding:14px;
-    }
-
-    svg{
-      display:block;
-      width:100%;
-      height:auto;
-      touch-action:none;
-      user-select:none;
-    }
-
-    .status{
-      display:flex;
-      justify-content:space-between;
-      gap:12px;
-      align-items:center;
-      margin-bottom:10px;
-      flex-wrap:wrap;
-    }
-
+    .wrap{max-width:1100px;margin:0 auto;padding:18px}
+    h1{font-size:clamp(24px,4vw,38px);margin:0 0 8px}
+    .sub{color:var(--muted);margin-bottom:16px;line-height:1.55}
+    .card{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:14px}
+    svg{display:block;width:100%;height:auto;touch-action:none;user-select:none}
+    .status{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:10px;flex-wrap:wrap}
     .status strong{font-size:16px}
-    .status span{
-      color:var(--muted);
-      font-size:14px;
-    }
-
-    .grid{
-      display:grid;
-      grid-template-columns:minmax(0,1fr) 320px;
-      gap:14px;
-      margin-top:14px;
-    }
-
-    @media(max-width:800px){
-      .grid{grid-template-columns:1fr}
-      .wrap{padding:10px}
-    }
-
+    .status span{color:var(--muted);font-size:14px}
+    .grid{display:grid;grid-template-columns:minmax(0,1fr) 320px;gap:14px;margin-top:14px}
+    @media(max-width:800px){.grid{grid-template-columns:1fr}.wrap{padding:10px}}
     .control{margin-bottom:16px}
-
-    .control label{
-      display:flex;
-      justify-content:space-between;
-      gap:12px;
-      font-weight:650;
-      font-size:14px;
-      margin-bottom:7px;
-    }
-
-    input[type="range"]{
-      width:100%;
-    }
-
-    .buttons{
-      display:flex;
-      gap:8px;
-      flex-wrap:wrap;
-    }
-
-    button{
-      min-height:44px;
-      border-radius:10px;
-      border:1px solid var(--line);
-      background:#fff;
-      color:var(--text);
-      font-weight:700;
-      padding:9px 14px;
-      cursor:pointer;
-    }
-
-    button.primary{
-      background:var(--accent);
-      border-color:var(--accent);
-      color:#fff;
-      flex:1;
-    }
-
-    .metrics{
-      display:grid;
-      grid-template-columns:1fr 1fr;
-      gap:10px;
-    }
-
-    .metric{
-      border:1px solid var(--line);
-      border-radius:12px;
-      padding:11px;
-    }
-
-    .metric .k{
-      font-size:12px;
-      color:var(--muted);
-    }
-
-    .metric .v{
-      font-size:21px;
-      font-weight:800;
-      margin-top:3px;
-    }
-
-    .hint{
-      font-size:13px;
-      color:var(--muted);
-      line-height:1.5;
-      margin-top:10px;
-    }
-
-    .best{
-      margin-top:10px;
-      padding:10px;
-      border-radius:10px;
-      background:#f3f4f6;
-      text-align:center;
-      font-size:14px;
-    }
-
-    .footer-note{
-      margin-top:14px;
-      color:var(--muted);
-      font-size:13px;
-      line-height:1.6;
-    }
+    .control label{display:flex;justify-content:space-between;gap:12px;font-weight:650;font-size:14px;margin-bottom:7px}
+    input[type="range"]{width:100%}
+    .buttons{display:flex;gap:8px;flex-wrap:wrap}
+    button{min-height:44px;border-radius:10px;border:1px solid var(--line);background:#fff;color:var(--text);font-weight:700;padding:9px 14px;cursor:pointer}
+    button.primary{background:var(--accent);border-color:var(--accent);color:#fff;flex:1}
+    .metrics{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+    .metric{border:1px solid var(--line);border-radius:12px;padding:11px}
+    .metric .k{font-size:12px;color:var(--muted)}
+    .metric .v{font-size:21px;font-weight:800;margin-top:3px}
+    .hint{font-size:13px;color:var(--muted);line-height:1.5;margin-top:10px}
+    .best{margin-top:10px;padding:10px;border-radius:10px;background:#f3f4f6;text-align:center;font-size:14px}
+    .footer-note{margin-top:14px;color:var(--muted);font-size:13px;line-height:1.6}
   </style>
 </head>
-
 <body>
-
 <main class="wrap">
-
   <h1>공은 정말 45°로 던져야 가장 멀리 갈까?</h1>
 
   <div class="sub">
@@ -187,408 +59,162 @@
   </div>
 
   <section class="card">
-
     <div class="status">
       <strong id="status">Ready</strong>
       <span id="live">45.0° · 25.0 m/s</span>
     </div>
 
-    <svg id="field"
-         viewBox="0 0 1000 520"
-         aria-label="포물선 운동 인터랙티브 실험">
-
-      <rect
-        x="20" y="20"
-        width="960" height="440"
-        rx="14"
-        fill="#fbfcfe"
-        stroke="#edf0f4"
-      />
-
-      <line
-        x1="55" y1="415"
-        x2="945" y2="415"
-        stroke="#9aa3af"
-        stroke-width="3"
-      />
-
+    <svg id="field" viewBox="0 0 1000 520" aria-label="포물선 운동 인터랙티브 실험">
+      <rect x="20" y="20" width="960" height="440" rx="14" fill="#fbfcfe" stroke="#edf0f4"/>
+      <line x1="55" y1="415" x2="945" y2="415" stroke="#9aa3af" stroke-width="3"/>
       <g id="ticks"></g>
 
-      <!-- 45도 기준 궤적 -->
-      <path
-        id="benchmark"
-        d=""
-        fill="none"
-        stroke="#9ca3af"
-        stroke-width="2.2"
-        stroke-dasharray="4 7"
-        opacity=".55"
-      />
+      <path id="benchmark" d="" fill="none" stroke="#9ca3af" stroke-width="2.2" stroke-dasharray="4 7" opacity=".55"/>
+      <path id="trajectory" d="" fill="none" stroke="#f59e0b" stroke-width="3.5" stroke-dasharray="7 7"/>
 
-      <!-- 현재 궤적 -->
-      <path
-        id="trajectory"
-        d=""
-        fill="none"
-        stroke="#f59e0b"
-        stroke-width="3.5"
-        stroke-dasharray="7 7"
-      />
+      <line id="pullLine" x1="145" y1="395" x2="145" y2="395" stroke="#6b7280" stroke-width="3" stroke-dasharray="6 6" opacity="0"/>
+      <line id="launchVector" x1="145" y1="395" x2="195" y2="345" stroke="#2563eb" stroke-width="5" stroke-linecap="round" opacity="0"/>
+      <polygon id="arrow" points="195,345 180,350 188,361" fill="#2563eb" opacity="0"/>
 
-      <!-- 당기는 선 -->
-      <line
-        id="pullLine"
-        x1="145" y1="395"
-        x2="145" y2="395"
-        stroke="#6b7280"
-        stroke-width="3"
-        stroke-dasharray="6 6"
-        opacity="0"
-      />
+      <circle id="ball" cx="145" cy="395" r="17" fill="#7c3aed" stroke="#111827" stroke-width="2" style="cursor:grab"/>
+      <path id="seam"
+            d="M130 390 Q145 378 160 390 M130 400 Q145 412 160 400 M145 379 L145 411"
+            fill="none" stroke="#111827" stroke-width="1.3" opacity=".65" pointer-events="none"/>
 
-      <!-- 발사방향 -->
-      <line
-        id="launchVector"
-        x1="145" y1="395"
-        x2="195" y2="345"
-        stroke="#2563eb"
-        stroke-width="5"
-        stroke-linecap="round"
-        opacity="0"
-      />
-
-      <polygon
-        id="arrow"
-        points="195,345 180,350 188,361"
-        fill="#2563eb"
-        opacity="0"
-      />
-
-      <!-- 공 -->
-      <circle
-        id="ball"
-        cx="145"
-        cy="395"
-        r="17"
-        fill="#7c3aed"
-        stroke="#111827"
-        stroke-width="2"
-        style="cursor:grab"
-      />
-
-      <path
-        id="seam"
-        d="
-          M130 390 Q145 378 160 390
-          M130 400 Q145 412 160 400
-          M145 379 L145 411
-        "
-        fill="none"
-        stroke="#111827"
-        stroke-width="1.3"
-        opacity=".65"
-        pointer-events="none"
-      />
-
-      <text
-        id="resultBig"
-        x="500"
-        y="95"
-        text-anchor="middle"
-        font-size="32"
-        font-weight="800"
-        fill="#111827">
-      </text>
-
-      <text
-        x="62"
-        y="445"
-        font-size="12"
-        fill="#6b7280">
-        0 m
-      </text>
-
+      <text id="resultBig" x="500" y="95" text-anchor="middle" font-size="32" font-weight="800" fill="#111827"></text>
+      <text x="62" y="445" font-size="12" fill="#6b7280">0 m</text>
     </svg>
 
     <div class="hint">
-      당긴 거리 → 초기속도 · 위/아래 움직임 → 발사각 ·
-      같은 속도에서 회색 점선은 45° 기준 궤적입니다.
+      당긴 거리 → 초기속도 · 위/아래 움직임 → 발사각 · 같은 속도에서 회색 점선은 45° 기준 궤적입니다.
     </div>
-
   </section>
 
-
   <div class="grid">
-
     <section class="card">
-
       <div class="control">
-        <label for="angle">
-          발사각
-          <output id="angleOut">45.0°</output>
-        </label>
-
-        <input
-          id="angle"
-          type="range"
-          min="10"
-          max="80"
-          step="0.5"
-          value="45"
-        />
+        <label for="angle">발사각 <output id="angleOut">45.0°</output></label>
+        <input id="angle" type="range" min="10" max="80" step="0.5" value="45"/>
       </div>
 
       <div class="control">
-        <label for="speed">
-          초기속도
-          <output id="speedOut">25.0 m/s</output>
-        </label>
-
-        <input
-          id="speed"
-          type="range"
-          min="10"
-          max="40"
-          step="0.5"
-          value="25"
-        />
+        <label for="speed">초기속도 <output id="speedOut">25.0 m/s</output></label>
+        <input id="speed" type="range" min="10" max="40" step="0.5" value="25"/>
       </div>
 
       <div class="buttons">
-        <button id="throwBtn"
-                class="primary"
-                type="button">
-          던지기
-        </button>
-
-        <button id="resetBtn"
-                type="button">
-          초기화
-        </button>
+        <button id="throwBtn" class="primary" type="button">던지기</button>
+        <button id="resetBtn" type="button">초기화</button>
       </div>
-
     </section>
 
-
     <section class="card">
-
       <div class="metrics">
-
-        <div class="metric">
-          <div class="k">이번 비거리</div>
-          <div class="v" id="rangeVal">63.7 m</div>
-        </div>
-
-        <div class="metric">
-          <div class="k">최고 높이</div>
-          <div class="v" id="peakVal">15.9 m</div>
-        </div>
-
-        <div class="metric">
-          <div class="k">45° 기준</div>
-          <div class="v" id="range45Val">63.7 m</div>
-        </div>
-
-        <div class="metric">
-          <div class="k">45° 대비</div>
-          <div class="v" id="deltaVal">0.0 m</div>
-        </div>
-
+        <div class="metric"><div class="k">이번 비거리</div><div class="v" id="rangeVal">63.7 m</div></div>
+        <div class="metric"><div class="k">최고 높이</div><div class="v" id="peakVal">15.9 m</div></div>
+        <div class="metric"><div class="k">45° 기준</div><div class="v" id="range45Val">63.7 m</div></div>
+        <div class="metric"><div class="k">45° 대비</div><div class="v" id="deltaVal">0.0 m</div></div>
       </div>
 
-      <button
-        id="findBtn"
-        type="button"
-        style="width:100%;margin-top:10px">
+      <button id="findBtn" type="button" style="width:100%;margin-top:10px">
         최적각 자동으로 찾기
       </button>
 
       <div id="bestText" class="best">
         같은 속도에서 45°를 이길 수 있을까요?
       </div>
-
     </section>
-
   </div>
 
   <div class="footer-note">
-    현재 모델은 중력만 고려합니다.
-    공기저항과 바람은 다음 단계에서 추가할 예정입니다.
+    현재 모델은 중력만 고려합니다. 공기저항과 바람은 다음 단계에서 추가할 예정입니다.
   </div>
-
 </main>
-
 
 <script>
 (() => {
-
   const g = 9.81;
 
-  const origin = {
-    x:145,
-    y:395
-  };
-
-  const plot = {
-    left:145,
-    right:920,
-    top:55,
-    bottom:395
-  };
+  const origin = { x:145, y:395 };
+  const plot = { left:145, right:920, top:55, bottom:395 };
 
   const MIN_SPEED = 10;
   const MAX_SPEED = 40;
-
-  // 마우스 약 110px만 당겨도 최대 출력
   const MAX_PULL_X = 110;
-
-  // 위아래 마우스 이동에 대한 각도 감도
   const ANGLE_GAIN = 0.42;
 
+  const field = document.getElementById('field');
+  const ball = document.getElementById('ball');
+  const seam = document.getElementById('seam');
+  const trajectory = document.getElementById('trajectory');
+  const benchmark = document.getElementById('benchmark');
+  const pullLine = document.getElementById('pullLine');
+  const launchVector = document.getElementById('launchVector');
+  const arrow = document.getElementById('arrow');
+  const ticks = document.getElementById('ticks');
 
-  const field =
-    document.getElementById('field');
+  const status = document.getElementById('status');
+  const live = document.getElementById('live');
+  const resultBig = document.getElementById('resultBig');
 
-  const ball =
-    document.getElementById('ball');
+  const angle = document.getElementById('angle');
+  const speed = document.getElementById('speed');
+  const angleOut = document.getElementById('angleOut');
+  const speedOut = document.getElementById('speedOut');
 
-  const seam =
-    document.getElementById('seam');
+  const rangeVal = document.getElementById('rangeVal');
+  const peakVal = document.getElementById('peakVal');
+  const range45Val = document.getElementById('range45Val');
+  const deltaVal = document.getElementById('deltaVal');
+  const bestText = document.getElementById('bestText');
 
-  const trajectory =
-    document.getElementById('trajectory');
-
-  const benchmark =
-    document.getElementById('benchmark');
-
-  const pullLine =
-    document.getElementById('pullLine');
-
-  const launchVector =
-    document.getElementById('launchVector');
-
-  const arrow =
-    document.getElementById('arrow');
-
-  const ticks =
-    document.getElementById('ticks');
-
-  const status =
-    document.getElementById('status');
-
-  const live =
-    document.getElementById('live');
-
-  const resultBig =
-    document.getElementById('resultBig');
-
-  const angle =
-    document.getElementById('angle');
-
-  const speed =
-    document.getElementById('speed');
-
-  const angleOut =
-    document.getElementById('angleOut');
-
-  const speedOut =
-    document.getElementById('speedOut');
-
-  const rangeVal =
-    document.getElementById('rangeVal');
-
-  const peakVal =
-    document.getElementById('peakVal');
-
-  const range45Val =
-    document.getElementById('range45Val');
-
-  const deltaVal =
-    document.getElementById('deltaVal');
-
-  const bestText =
-    document.getElementById('bestText');
-
+  const throwBtn = document.getElementById('throwBtn');
+  const resetBtn = document.getElementById('resetBtn');
+  const findBtn = document.getElementById('findBtn');
 
   let dragging = false;
   let raf = null;
   let returnTimer = null;
 
+  const clamp = (v,a,b) => Math.max(a,Math.min(b,v));
+  const rad = d => d*Math.PI/180;
 
-  const clamp = (v,a,b) =>
-    Math.max(a,Math.min(b,v));
+  const rangeFor = (a,s) =>
+    s*s*Math.sin(2*rad(a))/g;
 
-  const rad = d =>
-    d*Math.PI/180;
+  const flightFor = (a,s) =>
+    2*s*Math.sin(rad(a))/g;
 
-
-  function rangeFor(a,s){
-
-    return
-      s*s*Math.sin(2*rad(a))/g;
-
-  }
-
-
-  function peakFor(a,s){
-
-    const vy =
-      s*Math.sin(rad(a));
-
-    return
-      vy*vy/(2*g);
-
-  }
-
-
-  function flightFor(a,s){
-
-    return
-      2*s*Math.sin(rad(a))/g;
-
-  }
-
+  const peakFor = (a,s) => {
+    const vy = s*Math.sin(rad(a));
+    return vy*vy/(2*g);
+  };
 
   function params(){
-
-    return{
+    return {
       a:+angle.value,
       s:+speed.value
     };
-
   }
 
-
   function setBall(x,y){
-
     ball.setAttribute('cx',x);
     ball.setAttribute('cy',y);
-
     seam.setAttribute(
       'transform',
       `translate(${x-origin.x} ${y-origin.y})`
     );
-
   }
-
 
   function clearMotion(){
+    if(raf) cancelAnimationFrame(raf);
+    raf = null;
 
-    if(raf)
-      cancelAnimationFrame(raf);
-
-    raf=null;
-
-    if(returnTimer)
-      clearTimeout(returnTimer);
-
-    returnTimer=null;
-
+    if(returnTimer) clearTimeout(returnTimer);
+    returnTimer = null;
   }
 
-
   function scaleFor(a,s){
-
     const maxR =
       Math.max(
         20,
@@ -607,26 +233,16 @@
         )*1.30
       );
 
-    return{
-
-      sx:
-        (plot.right-plot.left)/maxR,
-
-      sy:
-        (plot.bottom-plot.top)/maxH,
-
+    return {
+      sx:(plot.right-plot.left)/maxR,
+      sy:(plot.bottom-plot.top)/maxH,
       maxR,
       maxH
-
     };
-
   }
 
-
   function screenPoint(t,a,s,sc){
-
-    const th =
-      rad(a);
+    const th = rad(a);
 
     const x =
       s*Math.cos(th)*t;
@@ -635,32 +251,18 @@
       s*Math.sin(th)*t
       -0.5*g*t*t;
 
-    return{
-
-      x:
-        origin.x
-        +x*sc.sx,
-
-      y:
-        origin.y
-        -y*sc.sy
-
+    return {
+      x:origin.x + x*sc.sx,
+      y:origin.y - y*sc.sy
     };
-
   }
 
-
   function pathFor(a,s,sc){
-
-    const tf =
-      flightFor(a,s);
-
-    let d='';
-
-    const n=100;
+    const tf = flightFor(a,s);
+    const n = 100;
+    let d = '';
 
     for(let i=0;i<=n;i++){
-
       const p =
         screenPoint(
           tf*i/n,
@@ -670,29 +272,23 @@
         );
 
       d +=
-        (i?' L ':'M ')
-        +p.x.toFixed(1)
-        +' '
-        +p.y.toFixed(1);
-
+        (i ? ' L ' : 'M ')
+        + p.x.toFixed(1)
+        + ' '
+        + p.y.toFixed(1);
     }
 
     return d;
-
   }
 
-
   function drawTicks(sc){
+    ticks.innerHTML = '';
 
-    ticks.innerHTML='';
-
-    const count=5;
-
-    const ns=
+    const count = 5;
+    const ns =
       'http://www.w3.org/2000/svg';
 
     for(let i=1;i<=count;i++){
-
       const x =
         plot.left
         +(plot.right-plot.left)
@@ -700,7 +296,6 @@
 
       const val =
         sc.maxR*i/count;
-
 
       const line =
         document.createElementNS(
@@ -717,7 +312,6 @@
         '#9ca3af'
       );
 
-
       const text =
         document.createElementNS(
           ns,
@@ -726,17 +320,14 @@
 
       text.setAttribute('x',x);
       text.setAttribute('y',445);
-
       text.setAttribute(
         'text-anchor',
         'middle'
       );
-
       text.setAttribute(
         'font-size',
         '12'
       );
-
       text.setAttribute(
         'fill',
         '#6b7280'
@@ -745,21 +336,15 @@
       text.textContent =
         val.toFixed(0)+' m';
 
-
       ticks.append(
         line,
         text
       );
-
     }
-
   }
 
-
   function updatePreview(){
-
-    const {a,s} =
-      params();
+    const {a,s} = params();
 
     const r =
       rangeFor(a,s);
@@ -776,7 +361,6 @@
     const sc =
       scaleFor(a,s);
 
-
     angleOut.textContent =
       a.toFixed(1)+'°';
 
@@ -788,7 +372,6 @@
       +'° · '
       +s.toFixed(1)
       +' m/s';
-
 
     rangeVal.textContent =
       r.toFixed(1)+' m';
@@ -804,7 +387,6 @@
       +delta.toFixed(1)
       +' m';
 
-
     trajectory.setAttribute(
       'd',
       pathFor(a,s,sc)
@@ -816,12 +398,9 @@
     );
 
     drawTicks(sc);
-
   }
 
-
   function hideAim(){
-
     pullLine.setAttribute(
       'opacity',
       '0'
@@ -836,14 +415,9 @@
       'opacity',
       '0'
     );
-
   }
 
-
-  function home(
-    message='Ready'
-  ){
-
+  function home(message='Ready'){
     setBall(
       origin.x,
       origin.y
@@ -853,12 +427,9 @@
 
     status.textContent =
       message;
-
   }
 
-
   function drawLaunchVector(a,s){
-
     const th =
       rad(a);
 
@@ -868,7 +439,6 @@
       (s-MIN_SPEED)
       /(MAX_SPEED-MIN_SPEED);
 
-
     const x2 =
       origin.x
       +len*Math.cos(th);
@@ -876,7 +446,6 @@
     const y2 =
       origin.y
       -len*Math.sin(th);
-
 
     launchVector.setAttribute(
       'x1',
@@ -903,7 +472,6 @@
       '1'
     );
 
-
     const ux =
       Math.cos(th);
 
@@ -916,13 +484,11 @@
     const py =
       ux;
 
-
     const bx =
       x2-17*ux;
 
     const by =
       y2-17*uy;
-
 
     arrow.setAttribute(
       'points',
@@ -935,18 +501,14 @@
       'opacity',
       '1'
     );
-
   }
 
-
   function animateThrow(){
-
     clearMotion();
 
     hideAim();
 
-    resultBig.textContent='';
-
+    resultBig.textContent = '';
 
     const {a,s} =
       params();
@@ -960,19 +522,13 @@
     const startTime =
       performance.now();
 
-
-    // 실제 비행시간과 무관하게
-    // 화면에서는 빠르게 보여줌
     const playback =
       0.72;
-
 
     status.textContent =
       'Flying…';
 
-
     function frame(now){
-
       const u =
         clamp(
           (now-startTime)
@@ -980,7 +536,6 @@
           0,
           1
         );
-
 
       const p =
         screenPoint(
@@ -990,67 +545,49 @@
           sc
         );
 
-
       setBall(
         p.x,
         p.y
       );
 
-
       if(u>=1){
-
-        raf=null;
-
+        raf = null;
 
         const r =
           rangeFor(a,s);
-
 
         resultBig.textContent =
           r.toFixed(1)
           +' m';
 
-
         status.textContent =
           'Landed';
-
 
         returnTimer =
           setTimeout(
             ()=>{
-
               home('Ready');
-
-              resultBig.textContent='';
-
+              resultBig.textContent = '';
             },
             550
           );
 
-
         return;
-
       }
-
 
       raf =
         requestAnimationFrame(
           frame
         );
-
     }
-
 
     raf =
       requestAnimationFrame(
         frame
       );
-
   }
 
-
   function svgPoint(evt){
-
     const p =
       field.createSVGPoint();
 
@@ -1060,29 +597,23 @@
     p.y =
       evt.clientY;
 
-
     const ctm =
       field.getScreenCTM();
-
 
     return ctm
       ? p.matrixTransform(
           ctm.inverse()
         )
       : origin;
-
   }
 
-
   function mapDrag(p){
-
     const dx =
       clamp(
         origin.x-p.x,
         0,
         MAX_PULL_X
       );
-
 
     const dy =
       clamp(
@@ -1091,21 +622,16 @@
         85
       );
 
-
-    // 작은 마우스 이동으로도
-    // 속도가 빨리 증가하도록 nonlinear mapping
     const power =
       Math.pow(
         dx/MAX_PULL_X,
         0.48
       );
 
-
     const s =
       MIN_SPEED
       +power*
       (MAX_SPEED-MIN_SPEED);
-
 
     const a =
       clamp(
@@ -1115,13 +641,11 @@
         80
       );
 
-
     angle.value =
       a.toFixed(1);
 
     speed.value =
       s.toFixed(1);
-
 
     const shownX =
       origin.x-dx;
@@ -1129,12 +653,10 @@
     const shownY =
       origin.y+dy;
 
-
     setBall(
       shownX,
       shownY
     );
-
 
     pullLine.setAttribute(
       'x1',
@@ -1161,26 +683,21 @@
       '1'
     );
 
-
     drawLaunchVector(
       a,
       s
     );
 
-
     updatePreview();
 
     status.textContent =
       'Aim…';
-
   }
-
 
   ball.addEventListener(
     'pointerdown',
     e=>{
-
-      dragging=true;
+      dragging = true;
 
       clearMotion();
 
@@ -1191,31 +708,25 @@
       ball.style.cursor =
         'grabbing';
 
-      resultBig.textContent='';
-
+      resultBig.textContent = '';
     }
   );
-
 
   ball.addEventListener(
     'pointermove',
     e=>{
-
       if(dragging)
         mapDrag(
           svgPoint(e)
         );
-
     }
   );
 
-
   function release(){
-
     if(!dragging)
       return;
 
-    dragging=false;
+    dragging = false;
 
     ball.style.cursor =
       'grab';
@@ -1226,9 +737,7 @@
     );
 
     animateThrow();
-
   }
-
 
   ball.addEventListener(
     'pointerup',
@@ -1240,131 +749,93 @@
     release
   );
 
-
   angle.addEventListener(
     'input',
     ()=>{
-
       bestText.textContent =
         '같은 속도에서 45°를 이길 수 있을까요?';
 
       updatePreview();
-
     }
   );
-
 
   speed.addEventListener(
     'input',
     ()=>{
-
       bestText.textContent =
         '같은 속도에서 45°를 이길 수 있을까요?';
 
       updatePreview();
-
     }
   );
 
+  throwBtn.addEventListener(
+    'click',
+    animateThrow
+  );
 
-  document
-    .getElementById(
-      'throwBtn'
-    )
-    .addEventListener(
-      'click',
-      animateThrow
-    );
+  resetBtn.addEventListener(
+    'click',
+    ()=>{
+      clearMotion();
 
+      angle.value = '45';
+      speed.value = '25';
 
-  document
-    .getElementById(
-      'resetBtn'
-    )
-    .addEventListener(
-      'click',
-      ()=>{
+      bestText.textContent =
+        '같은 속도에서 45°를 이길 수 있을까요?';
 
-        clearMotion();
+      resultBig.textContent = '';
 
-        angle.value='45';
-        speed.value='25';
+      updatePreview();
 
-        bestText.textContent =
-          '같은 속도에서 45°를 이길 수 있을까요?';
+      home();
+    }
+  );
 
-        resultBig.textContent='';
+  findBtn.addEventListener(
+    'click',
+    ()=>{
+      const s =
+        +speed.value;
 
-        updatePreview();
+      let bestA = 10;
+      let bestR = -1;
 
-        home();
+      for(
+        let a=10;
+        a<=80;
+        a+=0.1
+      ){
+        const r =
+          rangeFor(a,s);
 
-      }
-    );
-
-
-  document
-    .getElementById(
-      'findBtn'
-    )
-    .addEventListener(
-      'click',
-      ()=>{
-
-        const s =
-          +speed.value;
-
-        let bestA=10;
-        let bestR=-1;
-
-
-        for(
-          let a=10;
-          a<=80;
-          a+=0.1
-        ){
-
-          const r =
-            rangeFor(a,s);
-
-          if(r>bestR){
-
-            bestR=r;
-            bestA=a;
-
-          }
-
+        if(r>bestR){
+          bestR = r;
+          bestA = a;
         }
-
-
-        angle.value =
-          bestA.toFixed(1);
-
-
-        updatePreview();
-
-
-        bestText.innerHTML =
-          '<strong>Best angle = '
-          +bestA.toFixed(1)
-          +'°</strong> · Range = '
-          +bestR.toFixed(1)
-          +' m';
-
-
-        status.textContent =
-          'Best angle found';
-
       }
-    );
 
+      angle.value =
+        bestA.toFixed(1);
+
+      updatePreview();
+
+      bestText.innerHTML =
+        '<strong>Best angle = '
+        +bestA.toFixed(1)
+        +'°</strong> · Range = '
+        +bestR.toFixed(1)
+        +' m';
+
+      status.textContent =
+        'Best angle found';
+    }
+  );
 
   updatePreview();
-
   home();
-
 })();
 </script>
-
 </body>
 </html>
