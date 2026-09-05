@@ -1,0 +1,963 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>백스핀 & 마그누스 실험</title>
+  <style>
+    :root{
+      --bg:#ffffff;
+      --panel:#f7f9fc;
+      --card:#ffffff;
+      --text:#172033;
+      --muted:#6b7280;
+      --border:#dbe2ea;
+      --accent:#2563eb;
+      --accent-soft:#eaf1ff;
+      --path:#2563eb;
+      --baseline:#8a94a3;
+      --drag:#d65a4a;
+      --magnus:#16a06d;
+      --gravity:#7c63c8;
+      --shadow:0 8px 24px rgba(15,23,42,.06);
+    }
+
+    *{box-sizing:border-box}
+    html,body{margin:0;padding:0;background:transparent;color:var(--text);font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI","Noto Sans KR",Arial,sans-serif}
+    button,input{font:inherit}
+    button{cursor:pointer}
+    button:focus-visible,input:focus-visible{outline:3px solid rgba(37,99,235,.22);outline-offset:2px}
+
+    .app{
+      width:100%;
+      max-width:980px;
+      margin:0 auto;
+      padding:14px;
+    }
+
+    .top{
+      display:flex;
+      gap:12px;
+      justify-content:space-between;
+      align-items:flex-start;
+      flex-wrap:wrap;
+      margin-bottom:14px;
+    }
+    .title{font-size:20px;font-weight:800;line-height:1.25}
+    .subtitle{font-size:13px;color:var(--muted);margin-top:5px}
+    .tabs{display:flex;gap:6px}
+    .tab,.btn{
+      border:1px solid var(--border);
+      background:var(--card);
+      color:var(--text);
+      min-height:42px;
+      border-radius:10px;
+      padding:9px 13px;
+      font-weight:700;
+    }
+    .tab.active,.btn.primary{
+      background:var(--accent-soft);
+      border-color:#bfd0ff;
+      color:#194db7;
+    }
+
+    .controls{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:16px;
+      margin:4px 0 14px;
+    }
+    .ctrl-label{
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
+      align-items:center;
+      font-size:14px;
+      font-weight:700;
+      margin-bottom:7px;
+    }
+    .ctrl-label b{font-variant-numeric:tabular-nums}
+    input[type="range"]{width:100%;accent-color:var(--accent)}
+    .scale-labels{
+      display:flex;
+      justify-content:space-between;
+      gap:8px;
+      font-size:11px;
+      color:var(--muted);
+      margin-top:2px;
+    }
+
+    .toolbar{
+      display:flex;
+      flex-wrap:wrap;
+      align-items:center;
+      gap:8px;
+      margin-bottom:6px;
+    }
+    .toolbar .spacer{flex:1}
+    .check{
+      display:flex;
+      align-items:center;
+      gap:6px;
+      min-height:40px;
+      font-size:13px;
+      color:var(--text);
+      white-space:nowrap;
+    }
+    .check input{width:17px;height:17px;accent-color:var(--accent)}
+    .status{
+      min-height:20px;
+      color:var(--muted);
+      font-size:12px;
+      margin:0 0 10px;
+    }
+
+    .simbox{
+      background:var(--panel);
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:9px;
+      box-shadow:var(--shadow);
+    }
+    svg{display:block;width:100%;height:auto}
+    .legend{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px 16px;
+      align-items:center;
+      font-size:11px;
+      color:var(--muted);
+      padding:5px 7px 1px;
+    }
+    .swatch{
+      display:inline-block;
+      width:22px;
+      height:0;
+      border-top:3px solid currentColor;
+      margin-right:4px;
+      vertical-align:middle;
+    }
+    .dash{border-top-style:dashed}
+    .live-force{
+      display:grid;
+      grid-template-columns:repeat(3,minmax(0,1fr));
+      gap:8px;
+      margin-top:7px;
+      padding:8px;
+      border-top:1px solid var(--border);
+      font-size:12px;
+    }
+    .live-force div{min-width:0}
+    .live-force span{color:var(--muted)}
+    .live-force b{font-variant-numeric:tabular-nums}
+
+    .results{
+      display:grid;
+      grid-template-columns:repeat(5,minmax(0,1fr));
+      gap:8px;
+      margin-top:10px;
+    }
+    .result{
+      border:1px solid var(--border);
+      background:var(--card);
+      border-radius:10px;
+      padding:9px;
+      min-width:0;
+    }
+    .result .k{font-size:11px;color:var(--muted);margin-bottom:3px}
+    .result .v{font-size:16px;font-weight:800;font-variant-numeric:tabular-nums;white-space:nowrap}
+
+    .impact{
+      display:none;
+      margin-bottom:14px;
+    }
+    .impact.show{display:block}
+    .impact-card{
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:12px;
+      background:var(--card);
+    }
+    .impact-title{font-size:15px;font-weight:800}
+    .impact-help{font-size:12px;color:var(--muted);margin:4px 0 9px}
+    .hitpad{
+      position:relative;
+      height:180px;
+      border:1px solid var(--border);
+      border-radius:12px;
+      background:
+        linear-gradient(180deg,rgba(255,255,255,.75),rgba(245,248,252,.9)),
+        repeating-linear-gradient(90deg,transparent 0 39px,rgba(100,116,139,.05) 40px);
+      overflow:hidden;
+      user-select:none;
+      touch-action:none;
+    }
+    .guide{
+      position:absolute;
+      left:7%;
+      top:68%;
+      width:48%;
+      border-top:2px dashed #aab4c2;
+      transform:rotate(-20deg);
+      transform-origin:left center;
+      pointer-events:none;
+    }
+    .guide::after{
+      content:"→";
+      position:absolute;
+      right:-3px;
+      top:-14px;
+      font-size:18px;
+      color:#8e99a8;
+    }
+    .drag-tip{
+      position:absolute;
+      left:14px;
+      top:12px;
+      font-size:12px;
+      color:var(--muted);
+      pointer-events:none;
+    }
+    .ball-target{
+      position:absolute;
+      width:74px;
+      height:74px;
+      left:68%;
+      top:51%;
+      transform:translate(-50%,-50%);
+      border:2px solid #aab4c2;
+      border-radius:50%;
+      background:
+        radial-gradient(circle at 34% 28%,#fff 0 20%,#f0f4f9 68%,#dce3ec 100%);
+      box-shadow:inset -5px -7px 10px rgba(30,41,59,.08);
+      pointer-events:none;
+    }
+    .ball-target::before,.ball-target::after{
+      content:"";
+      position:absolute;
+      background:#9aa5b4;
+      opacity:.45;
+    }
+    .ball-target::before{width:1px;height:60%;left:50%;top:20%}
+    .ball-target::after{height:1px;width:60%;top:50%;left:20%}
+    .trail{
+      position:absolute;
+      left:0;top:0;
+      height:4px;
+      width:0;
+      opacity:0;
+      border-radius:999px;
+      background:var(--accent);
+      transform-origin:left center;
+      pointer-events:none;
+    }
+    .impact-values{
+      display:flex;
+      flex-wrap:wrap;
+      gap:8px 20px;
+      margin-top:9px;
+      font-size:13px;
+    }
+    .impact-values span{color:var(--muted)}
+    .impact-values b{color:var(--text);font-variant-numeric:tabular-nums}
+
+    .model-note{
+      margin-top:9px;
+      padding:8px 10px;
+      border-radius:10px;
+      background:#f7f8fb;
+      border:1px solid var(--border);
+      color:var(--muted);
+      font-size:11px;
+      line-height:1.5;
+    }
+
+    @media(max-width:680px){
+      .app{padding:10px}
+      .controls{grid-template-columns:1fr;gap:11px}
+      .results{grid-template-columns:repeat(2,minmax(0,1fr))}
+      .live-force{grid-template-columns:1fr 1fr 1fr}
+      .toolbar .spacer{display:none}
+      .toolbar{gap:6px}
+      .btn,.tab{padding:9px 11px}
+      .hitpad{height:165px}
+    }
+  </style>
+</head>
+
+<body>
+<div class="app">
+  <div class="top">
+    <div>
+      <div class="title">백스핀 & 마그누스 실험</div>
+      <div class="subtitle">항력은 그대로 두고, 회전에 의해 생기는 마그누스 힘이 궤적을 어떻게 바꾸는지 확인해보세요.</div>
+    </div>
+    <div class="tabs" role="tablist" aria-label="실험 방식">
+      <button class="tab active" id="tabExp" type="button" role="tab" aria-selected="true">실험 모드</button>
+      <button class="tab" id="tabHit" type="button" role="tab" aria-selected="false">직접 치기</button>
+    </div>
+  </div>
+
+  <section id="expPanel">
+    <div class="controls">
+      <label>
+        <div class="ctrl-label"><span>초기속도</span><b><span id="speedVal">30</span> m/s</b></div>
+        <input id="speed" type="range" min="10" max="45" step="1" value="30" aria-label="초기속도">
+      </label>
+      <label>
+        <div class="ctrl-label"><span>발사각</span><b><span id="angleVal">30</span>°</b></div>
+        <input id="angle" type="range" min="10" max="60" step="1" value="30" aria-label="발사각">
+      </label>
+      <label>
+        <div class="ctrl-label"><span>회전</span><b><span id="spinVal">1500</span> rpm</b></div>
+        <input id="spin" type="range" min="-3000" max="3000" step="100" value="1500" aria-label="회전속도">
+        <div class="scale-labels"><span>Topspin</span><span>0</span><span>Backspin</span></div>
+      </label>
+    </div>
+  </section>
+
+  <section id="impactPanel" class="impact">
+    <div class="impact-card">
+      <div class="impact-title">공을 직접 쳐보세요</div>
+      <div class="impact-help">
+        마우스나 손가락을 누른 채 <b>왼쪽 아래에서 오른쪽 위로 드래그</b>해 공을 가로지르세요.
+        공 중심보다 아래를 스치면 백스핀, 위를 스치면 톱스핀이 생깁니다.
+      </div>
+      <div id="hitPad" class="hitpad" aria-label="공 직접 치기 영역">
+        <div class="drag-tip">누른 채 드래그 ↗</div>
+        <div class="guide"></div>
+        <div class="ball-target"></div>
+        <div id="trail" class="trail"></div>
+      </div>
+      <div class="impact-values">
+        <div><span>생성 속도</span> <b id="hitSpeed">—</b></div>
+        <div><span>발사각</span> <b id="hitAngle">—</b></div>
+        <div><span>회전</span> <b id="hitSpin">—</b></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="toolbar">
+    <button id="throwBtn" class="btn primary" type="button">▶ 던지기</button>
+    <button id="zeroBtn" class="btn" type="button">0 rpm</button>
+    <button id="backBtn" class="btn" type="button">1500 rpm</button>
+    <button id="resetBtn" class="btn" type="button">초기화</button>
+    <span class="spacer"></span>
+    <label class="check"><input id="compare" type="checkbox" checked> No-spin 비교</label>
+    <label class="check"><input id="vectors" type="checkbox" checked> 힘 벡터</label>
+  </div>
+
+  <div id="status" class="status" aria-live="polite">현재 설정으로 던질 준비가 되었습니다.</div>
+
+  <div class="simbox">
+    <svg id="plot" viewBox="0 0 820 400" role="img" aria-label="백스핀에 따른 공의 비행 궤적">
+      <defs>
+        <marker id="arrowDrag" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M0,0 L10,5 L0,10 Z" fill="var(--drag)" opacity=".58"/>
+        </marker>
+        <marker id="arrowMagnus" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M0,0 L10,5 L0,10 Z" fill="var(--magnus)" opacity=".58"/>
+        </marker>
+        <marker id="arrowGravity" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M0,0 L10,5 L0,10 Z" fill="var(--gravity)" opacity=".58"/>
+        </marker>
+      </defs>
+
+      <g id="grid"></g>
+
+      <line x1="58" y1="344" x2="790" y2="344" stroke="var(--border)" stroke-width="1.5"/>
+      <line x1="58" y1="34" x2="58" y2="344" stroke="var(--border)" stroke-width="1.5"/>
+
+      <path id="basePath" fill="none" stroke="var(--baseline)" stroke-width="2" stroke-dasharray="7 7" opacity=".62"/>
+      <path id="flightPath" fill="none" stroke="var(--path)" stroke-width="3.5" stroke-linecap="round" stroke-linejoin="round"/>
+
+      <g id="ballGroup" transform="translate(58 344)">
+        <circle r="12" fill="#fff" stroke="#425166" stroke-width="1.5"/>
+        <path id="spinMark" d="M -7 3 A 8 8 0 0 1 5 -6" fill="none" stroke="#425166" stroke-width="1.6"/>
+        <g id="forceGroup" opacity=".48">
+          <line id="dragVec" stroke="var(--drag)" stroke-width="4" marker-end="url(#arrowDrag)"/>
+          <line id="magnusVec" stroke="var(--magnus)" stroke-width="4" marker-end="url(#arrowMagnus)"/>
+          <line id="gravityVec" stroke="var(--gravity)" stroke-width="4" marker-end="url(#arrowGravity)"/>
+        </g>
+      </g>
+
+      <text x="424" y="385" text-anchor="middle" font-size="12" fill="var(--muted)">수평거리 (m)</text>
+      <text x="18" y="190" text-anchor="middle" font-size="12" fill="var(--muted)" transform="rotate(-90 18 190)">높이 (m)</text>
+    </svg>
+
+    <div class="legend">
+      <span><i class="swatch" style="color:var(--path)"></i>현재 Spin</span>
+      <span><i class="swatch dash" style="color:var(--baseline)"></i>No-spin</span>
+      <span><i class="swatch" style="color:var(--drag)"></i>Drag</span>
+      <span><i class="swatch" style="color:var(--magnus)"></i>Magnus</span>
+      <span><i class="swatch" style="color:var(--gravity)"></i>Gravity</span>
+      <span>화살표 길이는 힘의 상대 변화를 반영</span>
+    </div>
+
+    <div class="live-force">
+      <div><span>Drag</span> <b id="dragN">—</b></div>
+      <div><span>Magnus</span> <b id="magnusN">—</b></div>
+      <div><span>Gravity</span> <b id="gravityN">1.42 N</b></div>
+    </div>
+  </div>
+
+  <div class="results" aria-live="polite">
+    <div class="result"><div class="k">Range</div><div class="v" id="rangeOut">—</div></div>
+    <div class="result"><div class="k">Max height</div><div class="v" id="heightOut">—</div></div>
+    <div class="result"><div class="k">Flight time</div><div class="v" id="timeOut">—</div></div>
+    <div class="result"><div class="k">Spin factor S₀</div><div class="v" id="spinFactorOut">—</div></div>
+    <div class="result"><div class="k">vs no-spin</div><div class="v" id="deltaOut">—</div></div>
+  </div>
+
+  <div class="model-note">
+    교육용 단순화 모델: 질량 0.145 kg, 지름 0.073 m, 공기밀도 1.225 kg/m³,
+    항력계수 C<sub>D</sub>=0.47 고정. 회전속도는 비행 중 일정하다고 가정하며,
+    C<sub>L</sub>은 순간 Spin factor에 따라 계산합니다. 운동방정식은 RK4로 적분합니다.
+  </div>
+</div>
+
+<script>
+(() => {
+  "use strict";
+
+  const $ = (id) => document.getElementById(id);
+
+  const speed = $("speed");
+  const angle = $("angle");
+  const spin = $("spin");
+
+  const P = {
+    m: 0.145,
+    d: 0.073,
+    rho: 1.225,
+    Cd: 0.47,
+    g: 9.80665
+  };
+  P.R = P.d / 2;
+  P.A = Math.PI * P.R * P.R;
+  P.Fg = P.m * P.g;
+
+  const AXIS = {
+    x0: 58,
+    y0: 344,
+    xMax: 180,
+    yMax: 60,
+    width: 732,
+    height: 300
+  };
+
+  let raf = 0;
+  let generation = 0;
+  let dirty = true;
+  let running = false;
+  let lastResult = null;
+  let lastBaseline = null;
+  let hitState = null;
+
+  function clamp(v, lo, hi) {
+    return Math.max(lo, Math.min(hi, v));
+  }
+
+  function sign(v) {
+    return v > 0 ? 1 : (v < 0 ? -1 : 0);
+  }
+
+  function clFromSpinFactor(S) {
+    const a = Math.abs(S);
+    return a <= 0.1 ? 1.5 * a : 0.09 + 0.6 * a;
+  }
+
+  function aero(vx, vy, omega) {
+    const v = Math.max(1e-9, Math.hypot(vx, vy));
+    const q = 0.5 * P.rho * P.A * v * v;
+    const Fd = q * P.Cd;
+    const S = P.R * omega / v;
+    const FmSigned = q * clFromSpinFactor(S) * sign(omega);
+    return {
+      v,
+      q,
+      S,
+      Fd,
+      FmSigned,
+      Fm: Math.abs(FmSigned),
+      tx: vx / v,
+      ty: vy / v
+    };
+  }
+
+  function derivative(state, omega) {
+    const a = aero(state[2], state[3], omega);
+    return [
+      state[2],
+      state[3],
+      (-a.Fd * a.tx - a.FmSigned * a.ty) / P.m,
+      (-a.Fd * a.ty + a.FmSigned * a.tx) / P.m - P.g
+    ];
+  }
+
+  function addScaled(a, b, k) {
+    return a.map((v, i) => v + b[i] * k);
+  }
+
+  function rk4(state, h, omega) {
+    const k1 = derivative(state, omega);
+    const k2 = derivative(addScaled(state, k1, h / 2), omega);
+    const k3 = derivative(addScaled(state, k2, h / 2), omega);
+    const k4 = derivative(addScaled(state, k3, h), omega);
+    return state.map((v, i) =>
+      v + h * (k1[i] + 2 * k2[i] + 2 * k3[i] + k4[i]) / 6
+    );
+  }
+
+  function simulate(v0, deg, rpm) {
+    const theta = deg * Math.PI / 180;
+    const omega = rpm * 2 * Math.PI / 60;
+    const h = 0.006;
+
+    let state = [0, 0, v0 * Math.cos(theta), v0 * Math.sin(theta)];
+    let t = 0;
+    let maxY = 0;
+    const pts = [];
+
+    for (let i = 0; i < 7000; i++) {
+      pts.push({
+        x: state[0],
+        y: Math.max(0, state[1]),
+        vx: state[2],
+        vy: state[3],
+        t
+      });
+
+      const prev = state.slice();
+      state = rk4(state, h, omega);
+      t += h;
+      maxY = Math.max(maxY, state[1]);
+
+      if (state[1] < 0 && t > 0.03) {
+        const f = prev[1] / (prev[1] - state[1]);
+        const range = prev[0] + f * (state[0] - prev[0]);
+        const tf = t - h + f * h;
+
+        pts.push({
+          x: range,
+          y: 0,
+          vx: prev[2] + f * (state[2] - prev[2]),
+          vy: prev[3] + f * (state[3] - prev[3]),
+          t: tf
+        });
+
+        return {
+          pts,
+          range,
+          maxY,
+          time: tf,
+          omega,
+          rpm,
+          v0,
+          deg,
+          S0: P.R * omega / v0
+        };
+      }
+    }
+
+    return {
+      pts,
+      range: state[0],
+      maxY,
+      time: t,
+      omega,
+      rpm,
+      v0,
+      deg,
+      S0: P.R * omega / v0
+    };
+  }
+
+  function sx(x) {
+    return AXIS.x0 + (x / AXIS.xMax) * AXIS.width;
+  }
+
+  function sy(y) {
+    return AXIS.y0 - (y / AXIS.yMax) * AXIS.height;
+  }
+
+  function pathString(traj, endIndex) {
+    const n = Math.min(endIndex, traj.pts.length - 1);
+    let d = "";
+    for (let i = 0; i <= n; i++) {
+      const p = traj.pts[i];
+      const X = clamp(sx(p.x), AXIS.x0, AXIS.x0 + AXIS.width);
+      const Y = clamp(sy(p.y), AXIS.y0 - AXIS.height, AXIS.y0);
+      d += (i === 0 ? "M" : "L") + X.toFixed(1) + " " + Y.toFixed(1) + " ";
+      if (p.x > AXIS.xMax || p.y > AXIS.yMax) break;
+    }
+    return d.trim();
+  }
+
+  function setLine(el, x1, y1, x2, y2) {
+    el.setAttribute("x1", x1.toFixed(1));
+    el.setAttribute("y1", y1.toFixed(1));
+    el.setAttribute("x2", x2.toFixed(1));
+    el.setAttribute("y2", y2.toFixed(1));
+  }
+
+  function forceLength(force, initialForce, nominal) {
+    if (initialForce <= 1e-10) return 0;
+    const ratio = Math.max(0, force / initialForce);
+    return nominal * clamp(Math.pow(ratio, 0.60), 0.24, 1.65);
+  }
+
+  function placeBall(traj, idx, initialAero) {
+    const p = traj.pts[idx];
+    const X = clamp(sx(p.x), AXIS.x0, AXIS.x0 + AXIS.width);
+    const Y = clamp(sy(p.y), AXIS.y0 - AXIS.height, AXIS.y0);
+
+    $("ballGroup").setAttribute("transform", `translate(${X} ${Y})`);
+
+    const a = aero(p.vx, p.vy, traj.omega);
+    const r = 15;
+
+    const dragLen = forceLength(a.Fd, initialAero.Fd, 78);
+    setLine(
+      $("dragVec"),
+      -a.tx * r,
+       a.ty * r,
+      -a.tx * dragLen,
+       a.ty * dragLen
+    );
+
+    const magLen = traj.omega === 0
+      ? 0
+      : forceLength(a.Fm, Math.max(initialAero.Fm, 1e-8), 74);
+
+    if (magLen > 0) {
+      const sg = sign(traj.omega);
+      setLine(
+        $("magnusVec"),
+        -a.ty * sg * r,
+        -a.tx * sg * r,
+        -a.ty * sg * magLen,
+        -a.tx * sg * magLen
+      );
+      $("magnusVec").style.display = "";
+    } else {
+      $("magnusVec").style.display = "none";
+    }
+
+    setLine($("gravityVec"), 0, r, 0, 66);
+
+    $("spinMark").setAttribute(
+      "transform",
+      `rotate(${((idx * traj.rpm / 420) % 360).toFixed(1)})`
+    );
+
+    $("dragN").textContent = a.Fd.toFixed(2) + " N";
+    $("magnusN").textContent = a.Fm.toFixed(2) + " N";
+    $("gravityN").textContent = P.Fg.toFixed(2) + " N";
+  }
+
+  function updateResults(tr, base) {
+    $("rangeOut").textContent = tr.range.toFixed(1) + " m";
+    $("heightOut").textContent = tr.maxY.toFixed(1) + " m";
+    $("timeOut").textContent = tr.time.toFixed(2) + " s";
+    $("spinFactorOut").textContent = tr.S0.toFixed(3);
+
+    const pct = (tr.range / base.range - 1) * 100;
+    $("deltaOut").textContent = (pct >= 0 ? "+" : "") + pct.toFixed(1) + "%";
+  }
+
+  function clearResults() {
+    ["rangeOut","heightOut","timeOut","spinFactorOut","deltaOut","dragN","magnusN"]
+      .forEach(id => $(id).textContent = "—");
+    $("gravityN").textContent = P.Fg.toFixed(2) + " N";
+  }
+
+  function cancelFlight() {
+    cancelAnimationFrame(raf);
+    generation += 1;
+    running = false;
+  }
+
+  function resetVisuals() {
+    cancelFlight();
+    $("flightPath").setAttribute("d", "");
+    $("basePath").setAttribute("d", "");
+    $("ballGroup").setAttribute("transform", `translate(${AXIS.x0} ${AXIS.y0})`);
+    $("forceGroup").style.visibility = "hidden";
+  }
+
+  function launch() {
+    cancelFlight();
+    const thisRun = generation;
+
+    const v0 = Number(speed.value);
+    const deg = Number(angle.value);
+    const rpm = Number(spin.value);
+
+    const tr = simulate(v0, deg, rpm);
+    const base = simulate(v0, deg, 0);
+
+    lastResult = tr;
+    lastBaseline = base;
+    dirty = false;
+    running = true;
+
+    $("flightPath").setAttribute("d", "");
+    $("basePath").setAttribute(
+      "d",
+      $("compare").checked ? pathString(base, base.pts.length - 1) : ""
+    );
+
+    $("forceGroup").style.display = $("vectors").checked ? "" : "none";
+    $("forceGroup").style.visibility = "visible";
+
+    const initialAero = aero(tr.pts[0].vx, tr.pts[0].vy, tr.omega);
+    placeBall(tr, 0, initialAero);
+    clearResults();
+    $("dragN").textContent = initialAero.Fd.toFixed(2) + " N";
+    $("magnusN").textContent = initialAero.Fm.toFixed(2) + " N";
+    $("status").textContent = "비행 중…";
+
+    const reduced = window.matchMedia &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+
+    if (reduced) {
+      $("flightPath").setAttribute("d", pathString(tr, tr.pts.length - 1));
+      placeBall(tr, tr.pts.length - 1, initialAero);
+      updateResults(tr, base);
+      $("status").textContent = "비행 완료";
+      running = false;
+      return;
+    }
+
+    const start = performance.now();
+    const duration = 1050;
+
+    function frame(now) {
+      if (thisRun !== generation) return;
+
+      const u = clamp((now - start) / duration, 0, 1);
+      const idx = Math.min(
+        tr.pts.length - 1,
+        Math.floor(u * (tr.pts.length - 1))
+      );
+
+      $("flightPath").setAttribute("d", pathString(tr, idx));
+      placeBall(tr, idx, initialAero);
+
+      if (u < 1) {
+        raf = requestAnimationFrame(frame);
+      } else {
+        $("flightPath").setAttribute("d", pathString(tr, tr.pts.length - 1));
+        placeBall(tr, tr.pts.length - 1, initialAero);
+        updateResults(tr, base);
+        $("status").textContent = "비행 완료 — 값을 바꿔 다시 비교해보세요.";
+        running = false;
+      }
+    }
+
+    raf = requestAnimationFrame(frame);
+  }
+
+  function syncLabels() {
+    $("speedVal").textContent = speed.value;
+    $("angleVal").textContent = angle.value;
+    $("spinVal").textContent = spin.value;
+  }
+
+  function settingsChanged() {
+    syncLabels();
+    dirty = true;
+    $("status").textContent = "설정이 변경되었습니다. 던지기를 눌러 확인하세요.";
+  }
+
+  function setMode(experimentMode) {
+    $("expPanel").style.display = experimentMode ? "" : "none";
+    $("impactPanel").classList.toggle("show", !experimentMode);
+
+    $("tabExp").classList.toggle("active", experimentMode);
+    $("tabHit").classList.toggle("active", !experimentMode);
+    $("tabExp").setAttribute("aria-selected", experimentMode ? "true" : "false");
+    $("tabHit").setAttribute("aria-selected", experimentMode ? "false" : "true");
+
+    $("throwBtn").style.display = experimentMode ? "" : "none";
+    $("zeroBtn").style.display = experimentMode ? "" : "none";
+    $("backBtn").style.display = experimentMode ? "" : "none";
+  }
+
+  speed.addEventListener("input", settingsChanged);
+  angle.addEventListener("input", settingsChanged);
+  spin.addEventListener("input", settingsChanged);
+
+  $("throwBtn").addEventListener("click", launch);
+
+  $("zeroBtn").addEventListener("click", () => {
+    spin.value = "0";
+    settingsChanged();
+  });
+
+  $("backBtn").addEventListener("click", () => {
+    spin.value = "1500";
+    settingsChanged();
+  });
+
+  $("resetBtn").addEventListener("click", () => {
+    speed.value = "30";
+    angle.value = "30";
+    spin.value = "1500";
+    syncLabels();
+
+    resetVisuals();
+    clearResults();
+
+    $("hitSpeed").textContent = "—";
+    $("hitAngle").textContent = "—";
+    $("hitSpin").textContent = "—";
+    $("trail").style.opacity = "0";
+
+    dirty = true;
+    $("status").textContent = "초기화되었습니다. 던지기를 눌러 시작하세요.";
+  });
+
+  $("vectors").addEventListener("change", () => {
+    $("forceGroup").style.display = $("vectors").checked ? "" : "none";
+  });
+
+  $("compare").addEventListener("change", () => {
+    if (!dirty && lastBaseline) {
+      $("basePath").setAttribute(
+        "d",
+        $("compare").checked
+          ? pathString(lastBaseline, lastBaseline.pts.length - 1)
+          : ""
+      );
+    }
+  });
+
+  $("tabExp").addEventListener("click", () => setMode(true));
+  $("tabHit").addEventListener("click", () => setMode(false));
+
+  const pad = $("hitPad");
+
+  function localPoint(e) {
+    const r = pad.getBoundingClientRect();
+    return {
+      x: e.clientX - r.left,
+      y: e.clientY - r.top,
+      w: r.width,
+      h: r.height
+    };
+  }
+
+  pad.addEventListener("pointerdown", (e) => {
+    const p = localPoint(e);
+    hitState = { start: p, time: performance.now() };
+    pad.setPointerCapture(e.pointerId);
+
+    const t = $("trail");
+    t.style.opacity = ".78";
+    t.style.left = p.x + "px";
+    t.style.top = p.y + "px";
+    t.style.width = "0px";
+  });
+
+  pad.addEventListener("pointermove", (e) => {
+    if (!hitState) return;
+
+    const a = hitState.start;
+    const b = localPoint(e);
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const L = Math.hypot(dx, dy);
+    const deg = Math.atan2(dy, dx) * 180 / Math.PI;
+
+    const t = $("trail");
+    t.style.width = L + "px";
+    t.style.transform = `rotate(${deg}deg)`;
+  });
+
+  pad.addEventListener("pointerup", (e) => {
+    if (!hitState) return;
+
+    const a = hitState.start;
+    const b = localPoint(e);
+    const dt = Math.max(70, performance.now() - hitState.time);
+    hitState = null;
+
+    const dx = b.x - a.x;
+    const dy = b.y - a.y;
+    const L = Math.hypot(dx, dy);
+
+    if (L < 45 || dx < 25) {
+      $("status").textContent = "공을 향해 왼쪽에서 오른쪽으로 조금 더 길게 드래그해보세요.";
+      return;
+    }
+
+    const cx = 0.68 * b.w;
+    const cy = 0.51 * b.h;
+
+    const ux = dx / L;
+    const uy = dy / L;
+
+    const projection = (cx - a.x) * ux + (cy - a.y) * uy;
+    const closestX = a.x + projection * ux;
+    const closestY = a.y + projection * uy;
+
+    const offset = (closestX - cx) * (-uy) + (closestY - cy) * ux;
+
+    if (Math.abs(offset) > 54 || projection < 0 || projection > L) {
+      $("status").textContent = "공을 빗나갔습니다. 공을 가로지르도록 드래그해보세요.";
+      return;
+    }
+
+    const v0 = clamp(12 + (L / dt) * 25, 12, 45);
+    const launchDeg = clamp(-Math.atan2(dy, dx) * 180 / Math.PI, 5, 55);
+    const rpm = clamp(offset * 52, -3000, 3000);
+
+    speed.value = String(Math.round(v0));
+    angle.value = String(Math.round(launchDeg));
+    spin.value = String(Math.round(rpm / 100) * 100);
+    syncLabels();
+
+    $("hitSpeed").textContent = speed.value + " m/s";
+    $("hitAngle").textContent = angle.value + "°";
+    $("hitSpin").textContent = spin.value + " rpm";
+
+    launch();
+  });
+
+  pad.addEventListener("pointercancel", () => {
+    hitState = null;
+  });
+
+  function buildGrid() {
+    const g = $("grid");
+    let out = "";
+
+    for (let x = 0; x <= AXIS.xMax; x += 30) {
+      const X = sx(x);
+      out += `<line x1="${X}" y1="${AXIS.y0-AXIS.height}" x2="${X}" y2="${AXIS.y0}" stroke="var(--border)" opacity=".38"/>`;
+      out += `<text x="${X}" y="${AXIS.y0+17}" text-anchor="middle" font-size="10.5" fill="var(--muted)">${x}</text>`;
+    }
+
+    for (let y = 0; y <= AXIS.yMax; y += 10) {
+      const Y = sy(y);
+      out += `<line x1="${AXIS.x0}" y1="${Y}" x2="${AXIS.x0+AXIS.width}" y2="${Y}" stroke="var(--border)" opacity=".38"/>`;
+      if (y > 0) {
+        out += `<text x="${AXIS.x0-10}" y="${Y+4}" text-anchor="end" font-size="10.5" fill="var(--muted)">${y}</text>`;
+      }
+    }
+
+    g.innerHTML = out;
+  }
+
+  buildGrid();
+  syncLabels();
+  clearResults();
+  resetVisuals();
+  generation = 0;
+  $("gravityN").textContent = P.Fg.toFixed(2) + " N";
+})();
+</script>
+</body>
+</html>
